@@ -51,7 +51,7 @@ func (s *Server) configureRouter() {
 			return
 		}
 		limit, err := strconv.Atoi(c.DefaultQuery("limit", "300"))
-		if err != nil || limit < 0 || limit > 1000 {
+		if err != nil || limit <= 0 || limit > 1000 {
 			c.AbortWithStatusJSON(400, gin.H{"error": "limit must be a positive number < 1000"})
 			return
 		}
@@ -62,6 +62,7 @@ func (s *Server) configureRouter() {
 			c.AbortWithStatusJSON(500, gin.H{"error": "internal server error"})
 			return
 		}
+
 		c.JSON(200, candlesticks)
 	})
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"strings"
 	"sync"
-	"ta-project-go/internal/model"
+	"ta-project-go/internal/app/model"
 	"time"
 )
 
@@ -62,6 +62,9 @@ func (s *MarkerService) OpenConnection() error {
 			switch update.EventType {
 			case "kline":
 				candles := s.cache[update.Symbol][update.Kline.Interval]
+				if len(candles) == 0 {
+					continue
+				}
 				lastCandle := candles[len(candles)-1]
 				if lastCandle.OpenTime == update.Kline.OpenTime {
 					candles[len(candles)-1] = klineToCandle(update.Kline)
@@ -180,7 +183,7 @@ func (s *MarkerService) Start() error {
 		for {
 			if s.subs.Len() != 0 {
 				sub := s.subs.Peek().(Subscription)
-				if time.Since(sub.time).Seconds() > 20 {
+				if time.Since(sub.time).Minutes() > 20 {
 					s.subs.Dequeue()
 					s.Remove(sub.symbol, sub.timeframe)
 				} else {
