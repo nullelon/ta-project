@@ -50,7 +50,6 @@ func (s *MarkerService) OpenConnection() error {
 				fmt.Println(err)
 				continue
 			}
-			fmt.Println(string(msg))
 			json.Unmarshal(msg, &upd)
 			s.updateChan <- upd
 		}
@@ -181,7 +180,6 @@ func (s *MarkerService) Start() error {
 		for {
 			if s.subs.Len() != 0 {
 				sub := s.subs.Peek().(Subscription)
-				fmt.Println(time.Since(sub.time).Seconds())
 				if time.Since(sub.time).Seconds() > 20 {
 					s.subs.Dequeue()
 					s.Remove(sub.symbol, sub.timeframe)
