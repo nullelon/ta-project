@@ -18,4 +18,6 @@ if __name__ == "__main__":
     graph.dump(export_name)
 
 def load():
-    return Graph.load(export_name)
+    # graph = Graph.load(export_name)
+    graph = Graph.load("data/30.05.21")
+    return graph

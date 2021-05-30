@@ -43,6 +43,8 @@ def get_chains(base, quote):
         visited_edges.extend(path.edges)
         path = find_path(graph, baseAsset, quoteAsset, cost_func=cost_func_wrap(visited_edges))
 
+    return conversion_chains
+
 # returns array of dicts of format {'chain': ['ETC/ETH', 'ETH/UAH'], 'rate': 1811.1134006050681}
 def get_weighed_chains(base, quote):
     # from, to
