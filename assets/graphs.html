@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body style="text-align: center">
+<div id="title"></div>
+<script>
+
+    // <!--/api/info?limit=30-->
+    // <!--/api/info?limit=1-->
+    pair = ["ETC", "USDT"]
+    symbol = pair.join("")
+    link = "http://yevhenii.live:8087/api/info?symbol=" + symbol
+    linkLimit30 = link + "&limit=30"
+    linkLastCandle = link + "&limit=1"
+
+    document.getElementById("title").innerText = pair.join("/") + " conversion"
+
+    google.charts.load('current', {'packages': ['corechart']});
+
+
+    google.charts.setOnLoadCallback(() => {
+        var data = new google.visualization.DataTable({
+            cols: [
+                {id: 'label', label: 'label', type: 'string'},
+                {id: 'low', label: 'low', type: 'number'},
+                {id: 'open', label: 'open', type: 'number'},
+                {id: 'close', label: 'close', type: 'number'},
+                {id: 'high', label: 'high', type: 'number'},
+            ]
+        });
+        var options = {
+            legend: 'none'
+        };
+
+        var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));
+
+        chart.draw(data, options);
+
+        function addCandleJson(json) {
+            addCandle(json["open_time"], json["low"], json["open"], json["close"], json["high"])
+        }
+
+        function addCandle(openTime, low, open, close, high) {
+            data.addRow([openTime.toString(), parseFloat(low), parseFloat(open), parseFloat(close), parseFloat(high)])
+            chart.draw(data, options);
+        }
+
+        // function updateLastCandleJson(json) {
+        //     updateLastCandle(json["low"], json["open"], json["close"], json["high"])
+        // }
+
+        function updateLastCandle(low, open, close, high) {
+            data.setValue(data.getNumberOfRows() - 1, 1, low)
+            data.setValue(data.getNumberOfRows() - 1, 2, open)
+            data.setValue(data.getNumberOfRows() - 1, 3, close)
+            data.setValue(data.getNumberOfRows() - 1, 4, high)
+            chart.draw(data, options);
+        }
+
+        function processCandle(openTime, low, open, close, high) {
+            if (openTime.toString() === data.getValue(data.getNumberOfRows() - 1, 0)) {
+                updateLastCandle(low, open, close, high)
+            } else {
+                data.removeRow(0)
+                addCandle(openTime, low, open, close, high)
+            }
+        }
+
+        function processCandleJson(json) {
+            processCandle(json["open_time"], json["low"], json["open"], json["close"], json["high"])
+        }
+
+
+        fetch(linkLimit30).then(value => {
+            value.json().then(json => {
+                for (let i = 0; i < json.length; i++) {
+                    let candle = json[i];
+                    addCandleJson(candle)
+                }
+            })
+        })
+
+
+        setInterval(function () {
+            fetch(linkLastCandle).then(value => {
+                value.json().then(json => {
+                    let lastCandle = json[json.length - 1];
+                    processCandleJson(lastCandle)
+
+                })
+
+            })
+
+        }, 2000);
+
+    });
+
+
+</script>
+<table>
+    <tr>
+        <td>
+            <div id="chart_div" style="width: 900px; height: 500px;"></div>
+        </td>
+        <td>
+
+        </td>
+        <td>
+            right column
+        </td>
+    </tr>
+</table>
+
+<a href="index.html">asd</a>
+<a href="graphs.html">asd</a>
+</body>
+</html>

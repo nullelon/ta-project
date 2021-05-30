@@ -2,119 +2,93 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Index</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/index.css">
+    <title>Main</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
-<body style="text-align: center">
-<div id="title"></div>
-<script>
+<body>
+<header id="header">
+    <nav class="links" style="--items: 5;">
+        <a href="index.html">Головна сторінкам</a>
+        <a href="#">Link 2</a>
+        <span class="line"></span>
+    </nav>
+</header>
+<form action="/graphs" class="place-items">
+    <select class="select" aria-label="Default select example">
+        <option disabled>Валюта 1</option>
+        <option value="1">uah</option>
+        <option value="2">btc</option>
+        <option value="3">euro</option>
+        <option value="4">etc</option>
+    </select>
+    <select class="select" aria-label="Default select example" >
+        <option disabled>Валюта 2</option>
+        <option value="1">uah</option>
+        <option value="2">btc</option>
+        <option value="3">euro</option>
+        <option value="4">etc</option>
+    </select>
+    <br>
+    <button type="submit" class="btn">Перейти</button></br>
+</form>
 
-    // <!--/api/info?limit=30-->
-    // <!--/api/info?limit=1-->
-    pair = ["ETC", "USDT"]
-    symbol = pair.join("")
-    link = "http://yevhenii.live:8087/api/info?symbol=" + symbol
-    linkLimit30 = link + "&limit=30"
-    linkLastCandle = link + "&limit=1"
+<script>$('.select').each(function() {
+    const _this = $(this),
+        selectOption = _this.find('option'),
+        selectOptionLength = selectOption.length,
+        selectedOption = selectOption.filter(':selected'),
+        duration = 450; // длительность анимации
 
-    document.getElementById("title").innerText = pair.join("/") + " conversion"
+    _this.hide();
+    _this.wrap('<div class="select"></div>');
+    $('<div>', {
+        class: 'new-select',
+        text: _this.children('option:disabled').text()
+    }).insertAfter(_this);
 
-    google.charts.load('current', {'packages': ['corechart']});
+    const selectHead = _this.next('.new-select');
+    $('<div>', {
+        class: 'new-select__list'
+    }).insertAfter(selectHead);
 
-
-    google.charts.setOnLoadCallback(() => {
-        var data = new google.visualization.DataTable({
-            cols: [
-                {id: 'label', label: 'label', type: 'string'},
-                {id: 'low', label: 'low', type: 'number'},
-                {id: 'open', label: 'open', type: 'number'},
-                {id: 'close', label: 'close', type: 'number'},
-                {id: 'high', label: 'high', type: 'number'},
-            ]
-        });
-        var options = {
-            legend: 'none'
-        };
-
-        var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));
-
-        chart.draw(data, options);
-
-        function addCandleJson(json) {
-            addCandle(json["open_time"], json["low"], json["open"], json["close"], json["high"])
-        }
-
-        function addCandle(openTime, low, open, close, high) {
-            data.addRow([openTime.toString(), parseFloat(low), parseFloat(open), parseFloat(close), parseFloat(high)])
-            chart.draw(data, options);
-        }
-
-        // function updateLastCandleJson(json) {
-        //     updateLastCandle(json["low"], json["open"], json["close"], json["high"])
-        // }
-
-        function updateLastCandle(low, open, close, high) {
-            data.setValue(data.getNumberOfRows() - 1, 1, low)
-            data.setValue(data.getNumberOfRows() - 1, 2, open)
-            data.setValue(data.getNumberOfRows() - 1, 3, close)
-            data.setValue(data.getNumberOfRows() - 1, 4, high)
-            chart.draw(data, options);
-        }
-
-        function processCandle(openTime, low, open, close, high) {
-            if (openTime.toString() === data.getValue(data.getNumberOfRows() - 1, 0)) {
-                updateLastCandle(low, open, close, high)
-            } else {
-                data.removeRow(0)
-                addCandle(openTime, low, open, close, high)
-            }
-        }
-
-        function processCandleJson(json) {
-            processCandle(json["open_time"], json["low"], json["open"], json["close"], json["high"])
-        }
-
-
-        fetch(linkLimit30).then(value => {
-            value.json().then(json => {
-                for (let i = 0; i < json.length; i++) {
-                    let candle = json[i];
-                    addCandleJson(candle)
-                }
+    const selectList = selectHead.next('.new-select__list');
+    for (let i = 1; i < selectOptionLength; i++) {
+        $('<div>', {
+            class: 'new-select__item',
+            html: $('<span>', {
+                text: selectOption.eq(i).text()
             })
         })
+            .attr('data-value', selectOption.eq(i).val())
+            .appendTo(selectList);
+    }
 
+    const selectItem = selectList.find('.new-select__item');
+    selectList.slideUp(0);
+    selectHead.on('click', function() {
+        if ( !$(this).hasClass('on') ) {
+            $(this).addClass('on');
+            selectList.slideDown(duration);
 
-        setInterval(function () {
-            fetch(linkLastCandle).then(value => {
-                value.json().then(json => {
-                    let lastCandle = json[json.length - 1];
-                    processCandleJson(lastCandle)
+            selectItem.on('click', function() {
+                let chooseItem = $(this).data('value');
 
-                })
+                $('select').val(chooseItem).attr('selected', 'selected');
+                selectHead.text( $(this).find('span').text() );
 
-            })
+                selectList.slideUp(duration);
+                selectHead.removeClass('on');
+            });
 
-        }, 2000);
-
+        } else {
+            $(this).removeClass('on');
+            selectList.slideUp(duration);
+        }
     });
-
-
+});
 </script>
-<table>
-    <tr>
-        <td>
-            <div id="chart_div" style="width: 900px; height: 500px;"></div>
-        </td>
-        <td>
-
-        </td>
-        <td>
-            right column
-        </td>
-    </tr>
-</table>
-
-footer
 </body>
 </html>

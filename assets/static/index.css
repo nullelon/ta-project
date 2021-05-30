@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css?family=Inconsolata|Lato:300,400,700');
+
+code {
+    background: #fff1;
+    font-family: 'Inconsolata', monospace;
+    padding: .2em .4em;
+}
+
+
+.links {
+    background-color: #4f5c88;
+    background-image: linear-gradient(to bottom, #0003, transparent);
+    box-shadow: 0 0 32px #0003;
+    font-size: 17px;
+    font-weight: 300;
+}
+
+.links > a {
+    color: #9ab;
+    padding: .75em;
+    text-align: center;
+    text-decoration: none;
+    transition: all .5s;
+}
+
+.links > a:hover {
+    background: #ffffff06;
+    color: #adf;
+}
+
+.links > .line {
+    background: #68a;
+    height: 1px;
+    pointer-events: none;
+}
+
+#header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.links {
+    display: grid;
+    grid-template-columns: repeat(var(--items), 1fr);
+    position: relative;
+}
+
+.links > .line {
+    opacity: 0;
+    transition: all .5s;
+    position: absolute;
+    bottom: 0;
+    --index: 0;
+}
+
+.links > a:hover ~ .line {
+    opacity: 1;
+}
+
+body {
+    align-content: center;
+    background-image: url("https://cutewallpaper.org/21/minimalist-desktop-wallpaper-1920x1080/Minimalist-Wallpaper-HD-2019-Live-Wallpaper-HD.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+form {
+    margin: 100px auto;
+    width: 500px;
+    height: 250px;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-content: center;
+    border: #0f0f0f;
+}
+
+.select {
+    background-color: white;
+    display: inline-block;
+    max-width: 248px;
+    width: 100%;
+    position: relative;
+}
+
+.new-select {
+    position: relative;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.new-select__list {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    border: 1px solid #ced4da;
+    cursor: pointer;
+    width: 100%;
+    z-index: 2;
+    background: #fff;
+    user-select: none;
+}
+
+.new-select__list.on {
+    display: inline-block;
+}
+
+.new-select__item span {
+    display: inline-block;
+    padding: 10px 15px;
+}
+
+.new-select__item span:hover {
+    color: #4f5c88;
+}
+
+.new-select:after {
+    content: '';
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    position: absolute;
+    right: 9px;
+    top: 9px;
+    opacity: 0.6;
+
+    transition: all .27s ease-in-out;
+    transform: rotate(0deg);
+}
+
+.new-select.on:after {
+    transform: rotate(180deg);
+}
+
+.btn {
+    background-color: #4f5c88;
+    border: none;
+    color: #9ab;
+    margin: 4px auto;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    width: 500px;
+}
+
+.btn > button {
+    color: #9ab;
+    padding: .75em;
+    text-align: center;
+    text-decoration: none;
+    transition: all .5s;
+}
+
+.btn > button:hover {
+    color: #adf;
+}
