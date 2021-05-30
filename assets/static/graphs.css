@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css?family=Inconsolata|Lato:300,400,700');
+
+code {
+    background: #fff1;
+    font-family: 'Inconsolata', monospace;
+    padding: .2em .4em;
+}
+
+#header {
+    z-index: 4;
+    position: fixed;
+}
+
+.links {
+    background-color: #4f5c88;
+    background-image: linear-gradient(to bottom, #0003, transparent);
+    box-shadow: 0 0 32px #0003;
+    font-size: 17px;
+    font-weight: 300;
+}
+
+.links > a {
+    color: #9ab;
+    padding: .75em;
+    text-align: center;
+    text-decoration: none;
+    transition: all .5s;
+}
+
+.links > a:hover {
+    background: #ffffff06;
+    color: #adf;
+}
+
+.links > .line {
+    background: #68a;
+    height: 1px;
+    pointer-events: none;
+}
+
+#header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.links {
+    align-items: center;
+    vertical-align: middle;
+    display: grid;
+    grid-template-columns: repeat(var(--items), 1fr);
+    position: relative;
+}
+
+.links > .line {
+    opacity: 0;
+    transition: all .5s;
+    position: absolute;
+    bottom: 0;
+    --index: 0;
+}
+
+.links > a:hover ~ .line {
+    opacity: 1;
+}
+
+body {
+    align-content: center;
+    background-color: #9cb0d1;
+    padding: 100px;
+}
+
+.graph {
+    height: 300px;
+    width: auto;
+    padding: 40px;
+}
+
+.wrapper {
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 2fr);
+    grid-auto-rows: 300px;
+    height: auto;
+}
+
+#lamb {
+    width: 50px;
+    height: 50px;
+}
+
+
+.block {
+    padding-bottom: 30px;
+    align-content: center;
+    vertical-align: middle;
+}
+
+div#chart1_div.graph, div#chart2_div.graph, div#chart3_div.graph, div#chart4_div.graph {
+    padding: 0 0 68px 8px;
+}
+
+h5 {
+    padding-top: 10px;
+}
