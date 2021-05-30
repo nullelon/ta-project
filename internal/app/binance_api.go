@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"ta-project-go/internal/model"
+	"ta-project-go/internal/app/model"
 )
 
 func binanceKlines(symbol, timeframe string, limit int) ([]model.Candle, error) {
