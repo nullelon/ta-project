@@ -40,7 +40,7 @@ func (s *Server) Start() error {
 func (s *Server) configureRouter() {
 	s.r.Use(cors.Default())
 
-	s.r.Static("/static", "assets")
+	s.r.Static("/static", "assets/static")
 	s.r.StaticFile("/", "assets/index.html")
 	s.r.StaticFile("/graphs", "assets/graphs.html")
 
