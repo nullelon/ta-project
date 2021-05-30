@@ -3,31 +3,36 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/golang-collections/collections/queue"
 	"github.com/gorilla/websocket"
-	"strconv"
 	"strings"
+	"sync"
 	"ta-project-go/internal/model"
+	"time"
 )
 
 type Subscription struct {
 	symbol    string
 	timeframe string
+	time      time.Time
 }
 
 type MarkerService struct {
 	ws         *websocket.Conn
+	wsMutex    *sync.Mutex
 	updateChan chan BinanceUpdate
 
-	subs    []Subscription
-	subsIds map[Subscription]int
+	subs *queue.Queue
 
-	cache map[string]map[string][]model.Candle
+	cache map[string]map[string][]model.Candle // hash-table + ArrayList of
 }
 
 func NewMarketService() *MarkerService {
 	return &MarkerService{
+		wsMutex:    new(sync.Mutex),
 		updateChan: make(chan BinanceUpdate),
 		cache:      make(map[string]map[string][]model.Candle, 20),
+		subs:       queue.New(),
 	}
 }
 
@@ -40,11 +45,13 @@ func (s *MarkerService) OpenConnection() error {
 	go func() {
 		for {
 			var upd BinanceUpdate
-			err := c.ReadJSON(&upd)
+			_, msg, err := c.ReadMessage()
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
+			fmt.Println(string(msg))
+			json.Unmarshal(msg, &upd)
 			s.updateChan <- upd
 		}
 	}()
@@ -65,22 +72,21 @@ func (s *MarkerService) OpenConnection() error {
 			}
 		}
 	}()
-	return nil
-}
 
-func klineToCandle(kline Kline) model.Candle {
-	open, _ := strconv.ParseFloat(kline.Open, 64)
-	low, _ := strconv.ParseFloat(kline.Low, 64)
-	high, _ := strconv.ParseFloat(kline.High, 64)
-	closeFloat, _ := strconv.ParseFloat(kline.Close, 64)
-	return model.Candle{
-		OpenTime:  kline.OpenTime,
-		Open:      open,
-		High:      high,
-		Low:       low,
-		Close:     closeFloat,
-		CloseTime: kline.CloseTime,
-	}
+	go func() {
+		for {
+			err := s.sendToWebSocket(WebsocketRequest{
+				Method: "LIST_SUBSCRIPTIONS",
+				Id:     55,
+			})
+			if err != nil {
+				return
+			}
+			<-time.After(time.Second)
+		}
+	}()
+
+	return nil
 }
 
 type WebsocketRequest struct {
@@ -89,25 +95,47 @@ type WebsocketRequest struct {
 	Id     int      `json:"id"`
 }
 
+func (s MarkerService) sendToWebSocket(request WebsocketRequest) error {
+	marshal, _ := json.Marshal(request)
+	s.wsMutex.Lock()
+	defer s.wsMutex.Unlock()
+	return s.ws.WriteMessage(websocket.TextMessage, marshal)
+}
+
 func (s *MarkerService) Subscribe(symbol string, timeframe string) {
-	marshal, _ := json.Marshal(WebsocketRequest{
+	fmt.Printf("Subscribing to %s:%s\n", strings.ToUpper(symbol), timeframe)
+	err := s.sendToWebSocket(WebsocketRequest{
 		Method: "SUBSCRIBE",
 		Params: []string{fmt.Sprintf("%s@kline_%s", strings.ToLower(symbol), timeframe)},
 		Id:     1,
 	})
-	err := s.ws.WriteMessage(websocket.TextMessage, marshal)
 	if err != nil {
 		return
+	}
+
+	s.subs.Enqueue(Subscription{
+		symbol:    symbol,
+		timeframe: timeframe,
+		time:      time.Now(),
+	})
+}
+
+func (s *MarkerService) Remove(symbol string, timeframe string) {
+	s.Unsubscribe(symbol, timeframe)
+	delete(s.cache[symbol], timeframe)
+
+	if len(s.cache[symbol]) == 0 {
+		delete(s.cache, symbol)
 	}
 }
 
 func (s *MarkerService) Unsubscribe(symbol string, timeframe string) {
-	marshal, _ := json.Marshal(WebsocketRequest{
+	fmt.Printf("Unsubscribing from %s:%s\n", strings.ToUpper(symbol), timeframe)
+	err := s.sendToWebSocket(WebsocketRequest{
 		Method: "UNSUBSCRIBE",
 		Params: []string{fmt.Sprintf("%s@kline_%s", strings.ToLower(symbol), timeframe)},
 		Id:     1,
 	})
-	err := s.ws.WriteMessage(websocket.TextMessage, marshal)
 	if err != nil {
 		return
 	}
@@ -148,5 +176,22 @@ func (s *MarkerService) Start() error {
 	if err != nil {
 		return err
 	}
+
+	go func() {
+		for {
+			if s.subs.Len() != 0 {
+				sub := s.subs.Peek().(Subscription)
+				fmt.Println(time.Since(sub.time).Seconds())
+				if time.Since(sub.time).Seconds() > 20 {
+					s.subs.Dequeue()
+					s.Remove(sub.symbol, sub.timeframe)
+				} else {
+					<-time.After(time.Second)
+				}
+			} else {
+				<-time.After(time.Second)
+			}
+		}
+	}()
 	return nil
 }
