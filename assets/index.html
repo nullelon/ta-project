@@ -11,7 +11,8 @@
 <body>
 <header id="header">
     <nav class="links" style="--items: 5;">
-        <a href="/">Головна сторінкам</a>
+        <a href="/"><img src="static/img/lamb.png" id="lamb"></a>
+
         <span class="line"></span>
     </nav>
 </header>
@@ -19,6 +20,7 @@
 <form class="place-items">
 <!--    TODO dynamic options-->
     <select class="select" aria-label="Default select example" id="baseAssetSelect">
+
         <option disabled>Валюта 1</option>
         <option value="1">ETC</option>
         <option value="2">BTC</option>
@@ -31,6 +33,7 @@
         <option value="2">USDT</option>
         <option value="3">EUR</option>
         <option value="4">RUB</option>
+
     </select>
     <br>
     <input type="button" class="btn" onclick="submitOnClick()" value="рассчитать">

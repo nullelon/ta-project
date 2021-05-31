@@ -65,6 +65,11 @@ code {
     opacity: 1;
 }
 
+#lamb {
+    width: 50px;
+    height: 50px;
+}
+
 body {
     align-content: center;
     background-color: #9cb0d1;
@@ -84,12 +89,6 @@ body {
     grid-auto-rows: 300px;
     height: auto;
 }
-
-#lamb {
-    width: 50px;
-    height: 50px;
-}
-
 
 .block {
     padding-bottom: 30px;

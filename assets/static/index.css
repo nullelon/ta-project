@@ -6,6 +6,10 @@ code {
     padding: .2em .4em;
 }
 
+#header {
+    z-index: 4;
+    position: fixed;
+}
 
 .links {
     background-color: #4f5c88;
@@ -43,6 +47,8 @@ code {
 }
 
 .links {
+    align-items: center;
+    vertical-align: middle;
     display: grid;
     grid-template-columns: repeat(var(--items), 1fr);
     position: relative;
@@ -60,13 +66,19 @@ code {
     opacity: 1;
 }
 
+#lamb {
+    width: 50px;
+    height: 50px;
+}
+
+
 body {
     align-content: center;
     background-image: url("https://cutewallpaper.org/21/minimalist-desktop-wallpaper-1920x1080/Minimalist-Wallpaper-HD-2019-Live-Wallpaper-HD.jpg");
     background-attachment: fixed;
     /*background-size: 100%;*/
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: auto;
 }
 
 form {
@@ -131,6 +143,7 @@ background-color: transparent;
 }
 
 #resultsList {
+    margin-top: 10px;
     width: 500px;
     margin-left: auto;
     margin-right: auto;
