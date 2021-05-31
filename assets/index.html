@@ -37,6 +37,8 @@
     <input type="button" class="btn" onclick="submitOnClick()" value="рассчитать">
 </form>
 
+<div id="resultsList"></div>
+
 <script>
 //     $('.select').each(function () {
 //     const _this = $(this),
@@ -101,6 +103,20 @@ function submitOnClick() {
     var quoteSelect = document.getElementById("quoteAssetSelect")
     var quoteAsset = quoteSelect.options[quoteSelect.selectedIndex].text
     console.log(baseAsset, quoteAsset)
+
+    setResults(["test1", "test2"])
+}
+
+function setResults(results){
+    var resultsList = document.getElementById("resultsList")
+    for (let i = 0; i < results.length; i++) {
+        var a = document.createElement('a');
+        var linkText = document.createTextNode(results[i]);
+        a.appendChild(linkText);
+        a.title = results[i];
+        a.href = "/graphs/"+results[i];
+        resultsList.appendChild(a);
+    }
 }
 </script>
 </body>
