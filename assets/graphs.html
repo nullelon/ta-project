@@ -19,16 +19,22 @@
 <div id="title"></div>
 
 <script>
+    // API_URL = "http://localhost:8087/api"
     API_URL = "http://yevhenii.live:8087/api"
 
     pair = ["ETC", "USDT"]
-    symbol = pair.join("")
 
-    function infoUrlWithLimit(limit) {
-        return  `${API_URL}/info?symbol=${symbol}&limit=${limit}`
+    const queryString = window.location.search
+    params = new URLSearchParams(queryString)
+    chain = params.get("chain")
+
+    assets = chain.split(">")
+    document.getElementById("title").innerText = assets[0] + " to " + assets[assets.length - 1]
+
+    function infoUrlWithLimit(symbol, limit) {
+        return `${API_URL}/info?symbol=${symbol}&limit=${limit}`
     }
 
-    document.getElementById("title").innerText = pair.join("/") + " conversion"
 
     google.charts.load('current', {'packages': ['corechart']});
 
@@ -47,71 +53,109 @@
             legend: 'none'
         };
 
-        let chart1 = new google.visualization.CandlestickChart(document.getElementById('chart1_div'));
-        let chart2 = new google.visualization.CandlestickChart(document.getElementById('chart2_div'));
-        let chart3 = new google.visualization.CandlestickChart(document.getElementById('chart3_div'));
-        let chart4 = new google.visualization.CandlestickChart(document.getElementById('chart4_div'));
-
-        chart1.draw(data, options);
-        chart2.draw(data, options);
-        chart3.draw(data, options);
-        chart4.draw(data, options);
-
-        function addCandleJson(json) {
-            addCandle(json["open_time"], json["low"], json["open"], json["close"], json["high"])
+        function drawChart(chart, data, options) {
+            chart.draw(data, options)
         }
 
-        function addCandle(openTime, low, open, close, high) {
-            data.addRow([openTime.toString(), parseFloat(low), parseFloat(open), parseFloat(close), parseFloat(high)])
-            chart1.draw(data, options);
-            chart2.draw(data, options);
-            chart3.draw(data, options);
-            chart4.draw(data, options);
-        }
-
-        function updateLastCandle(low, open, close, high) {
-            data.setValue(data.getNumberOfRows() - 1, 1, low)
-            data.setValue(data.getNumberOfRows() - 1, 2, open)
-            data.setValue(data.getNumberOfRows() - 1, 3, close)
-            data.setValue(data.getNumberOfRows() - 1, 4, high)
-            chart1.draw(data, options);
-            chart2.draw(data, options);
-            chart3.draw(data, options);
-            chart4.draw(data, options);
-        }
-
-        function processCandle(openTime, low, open, close, high) {
-            if (openTime.toString() === data.getValue(data.getNumberOfRows() - 1)) {
-                updateLastCandle(low, open, close, high)
-            } else {
-                data.removeRow(0)
-                addCandle(openTime, low, open, close, high)
+        function drawCharts(charts) {
+            for (let i = 0; i < charts.length; i++) {
+                drawChart(charts[i]["chart"], charts[i]["data"], options)
             }
         }
 
-        function processCandleJson(json) {
-            processCandle(json["open_time"], json["low"], json["open"], json["close"], json["high"])
+        charts = []
+        splitted = chain.split(">")
+        for (let i = 0; i < splitted.length - 1; i++) {
+            chartId = "chart"+ (i + 1) + "_div"
+            charts.push({
+                "chart": new google.visualization.CandlestickChart(document.getElementById(chartId)),
+                "data": new google.visualization.DataTable({
+                    cols: [
+                        {id: 'label', label: 'label', type: 'string'},
+                        {id: 'low', label: 'low', type: 'number'},
+                        {id: 'open', label: 'open', type: 'number'},
+                        {id: 'close', label: 'close', type: 'number'},
+                        {id: 'high', label: 'high', type: 'number'},
+                    ]
+                }),
+                "title": splitted[i] + "/" + splitted[i+1],
+                "symbol": splitted[i] + splitted[i+1]
+            })
+        }
+
+        for (let i = 0; i < charts.length; i++) {
+            drawChart(charts[i]["chart"], charts[i]["data"], options)
+            document.getElementById("chart" + (i + 1) + "_title").innerText = charts[i]["title"]
+        }
+
+        function addCandleJson(chart, json) {
+            addCandle(chart, json["open_time"], json["low"], json["open"], json["close"], json["high"])
+        }
+
+        function addCandle(chart, openTime, low, open, close, high) {
+            chart["data"].addRow([openTime.toString(), parseFloat(low), parseFloat(open), parseFloat(close), parseFloat(high)])
+            drawChart(chart["chart"], chart["data"], options)
+        }
+
+        function updateLastCandle(chart, low, open, close, high) {
+            chart["data"].setValue(chart["data"].getNumberOfRows() - 1, 1, low)
+            chart["data"].setValue(chart["data"].getNumberOfRows() - 1, 2, open)
+            chart["data"].setValue(chart["data"].getNumberOfRows() - 1, 3, close)
+            chart["data"].setValue(chart["data"].getNumberOfRows() - 1, 4, high)
+            drawChart(chart["chart"], chart["data"])
+        }
+
+        function processCandle(chart, openTime, low, open, close, high) {
+            if (openTime.toString() === chart["data"].getValue(chart["data"].getNumberOfRows() - 1, 0)) {
+                updateLastCandle(chart, low, open, close, high)
+            } else {
+                console.log("Last chart updated.")
+                chart["data"].removeRow(0)
+                addCandle(chart, openTime, low, open, close, high)
+            }
+        }
+
+        function processCandleJson(chart, json) {
+            processCandle(chart, json["open_time"], json["low"], json["open"], json["close"], json["high"])
         }
 
 
-        fetch(infoUrlWithLimit(30)).then(value => {
-            value.json().then(json => {
-                for (let i = 0; i < json.length; i++) {
-                    let candle = json[i];
-                    addCandleJson(candle)
-                }
-            })
-        })
+        function processCandles(charts) {
+            for (let i = 0; i < charts.length; i++) {
+                symbol = charts[i]["symbol"]
+
+                fetch(infoUrlWithLimit(symbol, 1)).then(value => {
+                    value.json().then(json => {
+                        let lastCandle = json[json.length - 1];
+                        processCandleJson(charts[i], lastCandle)
+                    })
+
+                })
+            }
+
+        }
+
+        function initCharts(charts) {
+            for (let i = 0; i < charts.length; i++) {
+                symbol = charts[i]["symbol"]
+
+                fetch(infoUrlWithLimit(symbol, 30)).then(value => {
+                    value.json().then(json => {
+                        for (let j = 0; j < json.length; j++) {
+                            let candle = json[j];
+                            addCandleJson(charts[i], candle)
+                        }
+                    })
+                })
+            }
+
+        }
+
+        initCharts(charts);
 
 
         setInterval(function () {
-            fetch(infoUrlWithLimit(1)).then(value => {
-                value.json().then(json => {
-                    let lastCandle = json[json.length - 1];
-                    processCandleJson(lastCandle)
-                })
-
-            })
+            processCandles(charts)
         }, 2000);
     });
 
@@ -120,19 +164,19 @@
 
 <div class="wrapper">
     <div class="block">
-        <h5>afd</h5>
+        <h5 id="chart1_title"></h5>
         <div id="chart1_div" class="graph"></div>
     </div>
     <div class="block">
-        <h5>afd</h5>
+        <h5 id="chart2_title"></h5>
         <div id="chart2_div" class="graph"></div>
     </div>
     <div class="block">
-        <h5>afd</h5>
+        <h5 id="chart3_title"></h5>
         <div id="chart3_div" class="graph"></div>
     </div>
     <div class="block">
-        <h5>afd</h5>
+        <h5 id="chart4_title"></h5>
         <div id="chart4_div" class="graph"></div>
     </div>
 </div>
