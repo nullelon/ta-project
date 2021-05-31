@@ -39,6 +39,7 @@ code {
 }
 
 #header {
+    z-index: 8;
     position: fixed;
     top: 0;
     left: 0;
@@ -74,15 +75,16 @@ code {
 body {
     align-content: center;
     background-image: url("https://cutewallpaper.org/21/minimalist-desktop-wallpaper-1920x1080/Minimalist-Wallpaper-HD-2019-Live-Wallpaper-HD.jpg");
-    background-position: center;
+    background-attachment: fixed;
+    /*background-size: 100%;*/
     background-repeat: no-repeat;
     background-size: auto;
 }
 
 form {
-    margin: 100px auto;
+    margin: 120px auto 0 auto;
     width: 500px;
-    height: 250px;
+    height: 100px;
     white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
@@ -91,69 +93,35 @@ form {
 }
 
 .select {
+    z-index: 7;
     background-color: white;
     display: inline-block;
     max-width: 248px;
     width: 100%;
     position: relative;
+    line-height: 40px;
 }
 
-.new-select {
-    position: relative;
-    border: 1px solid #ced4da;
-    padding: 10px 15px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.new-select__list {
-    position: absolute;
-    top: 45px;
-    left: 0;
-    border: 1px solid #ced4da;
-    cursor: pointer;
+select {
+appearance: none;
+background-color: transparent;
+    border: none;
+    padding: 0 1em 0 0;
+    margin: 0;
     width: 100%;
-    z-index: 2;
-    background: #fff;
-    user-select: none;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: inherit;
+    line-height: inherit;
 }
 
-.new-select__list.on {
-    display: inline-block;
-}
 
-.new-select__item span {
-    display: inline-block;
-    padding: 10px 15px;
-}
-
-.new-select__item span:hover {
-    color: #4f5c88;
-}
-
-.new-select:after {
-    content: '';
-    display: inline-block;
-    width: 25px;
-    height: 25px;
-    position: absolute;
-    right: 9px;
-    top: 9px;
-    opacity: 0.6;
-
-    transition: all .27s ease-in-out;
-    transform: rotate(0deg);
-}
-
-.new-select.on:after {
-    transform: rotate(180deg);
-}
 
 .btn {
     background-color: #4f5c88;
     border: none;
     color: #9ab;
-    margin: 4px auto;
+    margin: 10px auto;
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
@@ -172,4 +140,38 @@ form {
 
 .btn > button:hover {
     color: #adf;
+}
+
+#resultsList {
+    width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    align-content: center;
+}
+
+#resultsList a {
+    width: 100%;
+    color: #9cb0d1;
+    display: block;
+    margin-left: auto;
+    margin-right: auto
+}
+
+#resultsList a:link, #resultsList a:visited {
+    border-radius: 3px;
+    background-color: white;
+    color: black;
+    padding: 10px 0;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 0;
+    transition: 0.2s;
+}
+
+#resultsList a:hover, #resultsList a:active {
+    transition-delay: 0s;
+    background-color: #9cb0d1;
+    color: white;
 }
