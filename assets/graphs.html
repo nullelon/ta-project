@@ -5,27 +5,28 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
     <title>Graphs</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="static/graphs.css">
 </head>
 <body style="text-align: center">
 <header id="header">
     <nav class="links" style="--items: 5;">
-        <a href="/"><img src="static/img/lamb.png" id="lamb"></a>
+        <a href="/"><img src="static/img/lamb.png" id="lamb" alt=""></a>
         <a href="/graphs">Графіки</a>
         <span class="line"></span>
     </nav>
 </header>
-<h4><div id="title"></div></h4>
-<script>
 
-    // <!--/api/info?limit=30-->
-    // <!--/api/info?limit=1-->
+<div id="title"></div>
+
+<script>
+    API_URL = "http://yevhenii.live:8087/api"
+
     pair = ["ETC", "USDT"]
     symbol = pair.join("")
-    link = "http://yevhenii.live:8087/api/info?symbol=" + symbol
-    linkLimit30 = link + "&limit=30"
-    linkLastCandle = link + "&limit=1"
+
+    function infoUrlWithLimit(limit) {
+        return  `${API_URL}/info?symbol=${symbol}&limit=${limit}`
+    }
 
     document.getElementById("title").innerText = pair.join("/") + " conversion"
 
@@ -33,7 +34,7 @@
 
 
     google.charts.setOnLoadCallback(() => {
-        var data = new google.visualization.DataTable({
+        let data = new google.visualization.DataTable({
             cols: [
                 {id: 'label', label: 'label', type: 'string'},
                 {id: 'low', label: 'low', type: 'number'},
@@ -42,14 +43,14 @@
                 {id: 'high', label: 'high', type: 'number'},
             ]
         });
-        var options = {
+        let options = {
             legend: 'none'
         };
 
-        var chart1 = new google.visualization.CandlestickChart(document.getElementById('chart1_div'));
-        var chart2 = new google.visualization.CandlestickChart(document.getElementById('chart2_div'));
-        var chart3 = new google.visualization.CandlestickChart(document.getElementById('chart3_div'));
-        var chart4 = new google.visualization.CandlestickChart(document.getElementById('chart4_div'));
+        let chart1 = new google.visualization.CandlestickChart(document.getElementById('chart1_div'));
+        let chart2 = new google.visualization.CandlestickChart(document.getElementById('chart2_div'));
+        let chart3 = new google.visualization.CandlestickChart(document.getElementById('chart3_div'));
+        let chart4 = new google.visualization.CandlestickChart(document.getElementById('chart4_div'));
 
         chart1.draw(data, options);
         chart2.draw(data, options);
@@ -68,10 +69,6 @@
             chart4.draw(data, options);
         }
 
-        // function updateLastCandleJson(json) {
-        //     updateLastCandle(json["low"], json["open"], json["close"], json["high"])
-        // }
-
         function updateLastCandle(low, open, close, high) {
             data.setValue(data.getNumberOfRows() - 1, 1, low)
             data.setValue(data.getNumberOfRows() - 1, 2, open)
@@ -84,7 +81,7 @@
         }
 
         function processCandle(openTime, low, open, close, high) {
-            if (openTime.toString() === data.getValue(data.getNumberOfRows() - 1, 0)) {
+            if (openTime.toString() === data.getValue(data.getNumberOfRows() - 1)) {
                 updateLastCandle(low, open, close, high)
             } else {
                 data.removeRow(0)
@@ -97,7 +94,7 @@
         }
 
 
-        fetch(linkLimit30).then(value => {
+        fetch(infoUrlWithLimit(30)).then(value => {
             value.json().then(json => {
                 for (let i = 0; i < json.length; i++) {
                     let candle = json[i];
@@ -108,17 +105,14 @@
 
 
         setInterval(function () {
-            fetch(linkLastCandle).then(value => {
+            fetch(infoUrlWithLimit(1)).then(value => {
                 value.json().then(json => {
                     let lastCandle = json[json.length - 1];
                     processCandleJson(lastCandle)
-
                 })
 
             })
-
         }, 2000);
-
     });
 
 
